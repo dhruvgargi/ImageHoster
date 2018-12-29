@@ -1,9 +1,11 @@
 package ImageHoster.controller;
 /*
----------------------------------------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------------------------------------------
  Version         Modification Date                Developer                Modifications
----------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------
  *@ 1.0.0.1         22-Dec-2018                  Dhruv Sharma              Fix for image upload issue.
+ *@ 1.0.0.2         28-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can delete the image.
+ *@ 1.0.0.3         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit the image.
 */
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
@@ -13,11 +15,10 @@ import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -50,9 +51,13 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{title}")
-    public String showImage(@PathVariable("title") String title, Model model) {
-        Image image = imageService.getImageByTitle(title);
+    //@RequestMapping("/images/{title}")
+    //public String showImage(@PathVariable("title") String title, Model model) {
+    //@RequestMapping("/images/{title}")                         //Comments added by Dhruv Sharma. Fix for image upload issue.
+    @RequestMapping("/images/{id}/{title}")                      //Added by Dhruv Sharma. Fix for image upload issue.
+    public String showImage(@PathVariable("id") int id, @PathVariable("title") String title, Model model) {
+        //Image image = imageService.getImageByTitle(title);     //Comments added by Dhruv Sharma. Fix for image upload issue.
+        Image image = imageService.getImageByTitle(title,id);    //Added by Dhruv Sharma. Fix for image upload issue.
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
         return "images/image";
@@ -96,13 +101,32 @@ public class ImageController {
 
     //The method first needs to convert the list of all the tags to a string containing all the tags separated by a comma and then add this string in a Model type object
     //This string is then displayed by 'edit.html' file as previous tags of an image
+    /* Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
     @RequestMapping(value = "/editImage")
     public String editImage(@RequestParam("imageId") Integer imageId, Model model) {
+       End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.*/
+
+    // Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
+    @RequestMapping(value = "/editImage")
+    public String editImage(@RequestParam("imageId") Integer imageId, Model model,HttpSession session) {
+    // End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
         Image image = imageService.getImage(imageId);
 
-        String tags = convertTagsToString(image.getTags());
-        model.addAttribute("image", image);
-        model.addAttribute("tags", tags);
+        //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
+        String errorPage = "", result = "";
+        User user = (User) session.getAttribute("loggeduser");
+        boolean bool = imageService.validateUser(user.getId(),imageId);
+        if (!bool){
+            errorPage = imageId+"/"+image.getTitle();
+            return "redirect:/images/"+errorPage+"?"+"editError";
+        }
+        else {
+            String tags = convertTagsToString(image.getTags());
+            model.addAttribute("image", image);
+            model.addAttribute("tags", tags);
+        }
+        //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
+
         return "images/edit";
     }
 
@@ -124,30 +148,61 @@ public class ImageController {
         String updatedImageData = convertUploadedFileToBase64(file);
         List<Tag> imageTags = findOrCreateTags(tags);
 
-        if (updatedImageData.isEmpty())
-            updatedImage.setImageFile(image.getImageFile());
-        else {
-            updatedImage.setImageFile(updatedImageData);
-        }
-
-        updatedImage.setId(imageId);
         User user = (User) session.getAttribute("loggeduser");
-        updatedImage.setUser(user);
-        updatedImage.setTags(imageTags);
-        updatedImage.setDate(new Date());
 
-        imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+            if (updatedImageData.isEmpty())
+                updatedImage.setImageFile(image.getImageFile());
+            else {
+                updatedImage.setImageFile(updatedImageData);
+            }
+
+            updatedImage.setId(imageId);
+            updatedImage.setUser(user);
+            updatedImage.setTags(imageTags);
+            updatedImage.setDate(new Date());
+
+            imageService.updateImage(updatedImage);
+
+        //return "redirect:/images/" + updatedImage.getTitle();           //Comments added by Dhruv Sharma. Fix for image upload issue.
+        return "redirect:/images/"+imageId+"/"+updatedImage.getTitle();   //Added by Dhruv Sharma. Fix for image upload issue.
     }
 
 
     //This controller method is called when the request pattern is of type 'deleteImage' and also the incoming request is of DELETE type
     //The method calls the deleteImage() method in the business logic passing the id of the image to be deleted
     //Looks for a controller method with request mapping of type '/images'
+
+    /* Start: Comments added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
     public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId) {
-        imageService.deleteImage(imageId);
-        return "redirect:/images";
+      End: Comments added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.*/
+
+    //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+    @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session) {
+    //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+
+        //imageService.deleteImage(imageId);      //Comments added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+
+        //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+        String result = "",errorPage = "";
+        Image image = imageService.getImage(imageId);
+        User user = (User) session.getAttribute("loggeduser");
+
+        boolean bool = imageService.validateUser(user.getId(),imageId);
+        if (bool){
+            imageService.deleteImage(imageId);
+            result = "redirect:/images";
+        }
+        else{
+            errorPage = imageId+"/"+image.getTitle();
+            result = "redirect:images/"+errorPage+"?"+"deleteError";
+
+        }
+        //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+
+        //return "redirect:/images";             //Comments added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+        return result;                           //Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
     }
 
 
@@ -186,10 +241,11 @@ public class ImageController {
         for (int i = 0; i <= tags.size() - 2; i++) {
             tagString.append(tags.get(i).getName()).append(",");
         }
-
-        Tag lastTag = tags.get(tags.size() - 1);
-        tagString.append(lastTag.getName());
-
+        if(tags.size()<=0) return "";
+        else {
+            Tag lastTag = tags.get(tags.size() - 1);
+            tagString.append(lastTag.getName());
+        }
         return tagString.toString();
     }
 }
