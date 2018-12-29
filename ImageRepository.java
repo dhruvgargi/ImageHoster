@@ -1,9 +1,10 @@
 package ImageHoster.repository;
 /*
----------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------------------
  Version         Modification Date                Developer                Modifications
----------------------------------------------------------------------------------------------------------------------
- *@ 1.0.0.1             28-Dec-2018              Dhruv Sharma              Fix for Image Upload Issue.
+--------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         22-Dec-2018                  Dhruv Sharma              Fix for Image Upload Issue.
+ *@ 1.0.0.2         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit/delete the image.
 */
 import ImageHoster.model.Image;
 import org.springframework.stereotype.Repository;
@@ -111,5 +112,27 @@ public class ImageRepository {
             transaction.rollback();
         }
     }
+	
+	// Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
+    public boolean validateUser(Integer loggedUserId, Integer imageId){
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Image> typedQuery = null;
+        Image image = null;
+        Integer imageUserId = null;
+        boolean bool = false;
+        try {
+            typedQuery = em.createQuery("SELECT i from Image i where i.id = :imageId", Image.class).setParameter("imageId", imageId);
+            image = typedQuery.getSingleResult();
+            imageUserId = (Integer) image.getUser().getId();
+            if(loggedUserId == imageUserId){ bool = true;}
+        }catch(Exception ex){
+         System.out.println("Exception: "+ex);
+        }finally{
+            typedQuery = null;
+            em.close();
+        }
+        return bool;
+    }
+    // End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
 
 }
