@@ -1,5 +1,11 @@
 
 package ImageHoster.controller;
+/*
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+  Version               Date                      Developer                    Modifications Done
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+*@ 1.0.0.1          30-Dec-2018                  Dhruv Sharma                  Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+*/
 
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
@@ -232,10 +238,17 @@ public class ImageControllerTest {
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
 
-        this.mockMvc.perform(get("/editImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
+        /*
+        Start: Comments added by Dhruv Sharma.Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+        this.mockMvc.perform(get("/editImage").param("imageId", "1").session(session))
+        .andExpect(model().attribute("editError", "Only the owner of the image can edit the image"));
+        End: Comments added by Dhruv Sharma.Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+        */
+
+        //Start: Comments added by Dhruv Sharma.Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+        this.mockMvc.perform(delete("/editImage").param("imageId", "1").session(session))
+        .andExpect(redirectedUrl("/images/"+image.getId()+"/"+image.getTitle()+"?editError"));
+        //End: Comments added by Dhruv Sharma.Modification in request parameter in Image Controller for restricting the edit/delete functionality.
     }
 
     //This test checks the controller logic when the owner of the image sends the DELETE request to delete the image and checks whether the logic returns the html file 'images.html'
@@ -262,7 +275,7 @@ public class ImageControllerTest {
         image.setUser(user);
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
-        System.out.println("****"+image.getId()+"666 "+image.getTitle() );
+
         this.mockMvc.perform(delete("/deleteImage")
                 .param("imageId", "1")
                 .session(session))
@@ -307,10 +320,18 @@ public class ImageControllerTest {
 
         Mockito.when(imageService.getImage(Mockito.anyInt())).thenReturn(image);
 
-        this.mockMvc.perform(delete("/deleteImage")
-                .param("imageId", "1")
-                .session(session))
-                .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
+         /*
+         Start: Comments added by Dhruv Sharma. Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+         this.mockMvc.perform(delete("/deleteImage").param("imageId", "1").session(session))
+         .andExpect(model().attribute("deleteError", "Only the owner of the image can delete the image"));
+         End: Comments added by Dhruv Sharma. Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+         */
+
+        //Start: Added by Dhruv Sharma. Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+        this.mockMvc.perform(delete("/deleteImage").param("imageId", "1").session(session))
+        .andExpect(redirectedUrl("images/"+image.getId()+"/"+image.getTitle()+"?deleteError"));
+        //End: Added by Dhruv Sharma. Modification in request parameter in Image Controller for restricting the edit/delete functionality.
+
     }
 }
 
