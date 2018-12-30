@@ -1,5 +1,10 @@
 package ImageHoster.model;
-
+/*
+---------------------------------------------------------------------------------------------------------------------------------------
+ Version         Modification Date                Developer                Modifications
+---------------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         30-Dec-2018                  Dhruv Sharma              Functionality Upgrade: Users can add comments for any image.
+*/
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +46,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
     private List<Image> images = new ArrayList<>();
 
+    //Start: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
+    private List<Comments> comments = new ArrayList<>();
+    //End: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
+
     public Integer getId() {
         return id;
     }
@@ -80,5 +90,10 @@ public class User {
     public void setImages(List<Image> images) {
         this.images = images;
     }
+
+    //Start: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
+    public List<Comments> getComments() {  return comments; }
+    public void setComments(List<Comments> comments) { this.comments = comments; }
+    //End: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
 }
 

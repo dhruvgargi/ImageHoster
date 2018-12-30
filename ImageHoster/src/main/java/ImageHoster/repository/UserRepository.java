@@ -1,9 +1,16 @@
 package ImageHoster.repository;
-
+/*
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Version         Modification Date                Developer                Modifications
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         30-Dec-2018                  Dhruv Sharma              Functionality Upgrade: Password validation functionality for Image Hoster Project.
+*/
 import ImageHoster.model.User;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //The annotation is a special type of @Component annotation which describes that the class defines a data repository
 @Repository
@@ -31,6 +38,24 @@ public class UserRepository {
         }
     }
 
+    // Start: Added by Dhruv Sharma. Functionality Upgrade: Password validation functionality for Image Hoster Project.
+    public Integer checkPassword(User user){
+        Integer passwordFlag = 0;
+
+        Pattern pattern;
+        Matcher matcher;
+
+        String passwordPattern = "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[@$!%*#?&])[A-Za-z\\d@$!%*#?&]{3,}$";
+
+        pattern = Pattern.compile(passwordPattern);
+        matcher = pattern.matcher(user.getPassword());
+
+        if(matcher.matches())
+        passwordFlag = 1;
+
+        return passwordFlag;
+    }
+    // End: Added by Dhruv Sharma. Functionality Upgrade: Password validation functionality for Image Hoster Project.
 
     //The method receives the entered username and password
     //Creates an instance of EntityManager

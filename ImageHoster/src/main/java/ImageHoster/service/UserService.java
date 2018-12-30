@@ -1,5 +1,10 @@
 package ImageHoster.service;
-
+/*
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Version         Modification Date                Developer                Modifications
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         30-Dec-2018                  Dhruv Sharma              Functionality Upgrade: Password validation functionality for Image Hoster Project.
+*/
 import ImageHoster.model.User;
 import ImageHoster.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +35,11 @@ public class UserService {
         } else {
             return null;
         }
+    }
+
+    // Added by Dhruv Sharma. Functionality Upgrade: Password validation functionality for Image Hoster Project.
+    public Integer checkPassword(User user){
+        return userRepository.checkPassword(user);
     }
 
 }

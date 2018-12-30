@@ -1,12 +1,14 @@
 package ImageHoster.service;
-
+/*
+--------------------------------------------------------------------------------------------------------------------------------
+ Version         Modification Date                Developer                Modifications
+--------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit/delete the image.
+*/
 import ImageHoster.model.Image;
 import ImageHoster.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -27,9 +29,8 @@ public class ImageService {
 
 
     //The method calls the getImageByTitle() method in the Repository and passes the title of the image to be fetched
-    public Image getImageByTitle(String title) {
-        return imageRepository.getImageByTitle(title);
-    }
+    //public Image getImageByTitle(String title) { return imageRepository.getImageByTitle(title); }
+    public Image getImageByTitle(String title,int id) { return imageRepository.getImageByTitle(title,id); }//Dhruv
 
     //The method calls the getImage() method in the Repository and passes the id of the image to be fetched
     public Image getImage(Integer imageId) {
@@ -42,8 +43,14 @@ public class ImageService {
     }
 
     //The method calls the deleteImage() method in the Repository and passes the Image id of the image to be deleted in the database
-    public void deleteImage(Integer imageId) {
-        imageRepository.deleteImage(imageId);
+    public void deleteImage(Integer imageId) { imageRepository.deleteImage(imageId);
     }
+
+    //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
+    public boolean validateUser(Integer loggedUserId, Integer imageId){
+        return imageRepository.validateUser(loggedUserId,imageId);
+    }
+    //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
+
 
 }

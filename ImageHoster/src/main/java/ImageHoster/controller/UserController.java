@@ -10,10 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-
 import javax.servlet.http.HttpSession;
 import java.util.List;
-
 
 @Controller
 public class UserController {
@@ -24,12 +22,16 @@ public class UserController {
     @Autowired
     private ImageService imageService;
 
+    @Autowired
+    private UserController usercontroller;
+
     //This controller method is called when the request pattern is of type 'users/registration'
     //This method declares User type and UserProfile type object
     //Sets the user profile with UserProfile type object
     //Adds User type object to a model and returns 'users/registration.html' file
     @RequestMapping("users/registration")
     public String registration(Model model) {
+
         User user = new User();
         UserProfile profile = new UserProfile();
         user.setProfile(profile);
@@ -40,14 +42,21 @@ public class UserController {
     //This controller method is called when the request pattern is of type 'users/registration' and also the incoming request is of POST type
     //This method calls the business logic and after the user record is persisted in the database, directs to login page
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
-    public String registerUser(User user) {
-        userService.registerUser(user);
-        return "redirect:/users/login";
+    public String registerUser(User user, Model model) {
+        Integer isPasswordCompliant = 1;
+        isPasswordCompliant = userService.checkPassword(user);             //Validating the password as per the defined password policy.
+        if(isPasswordCompliant == 0){                                      //Password does not matches with the defined password policy.
+            model.addAttribute("passwordTypeError","Password must contain atleast 1 alphabet, 1 number & 1 special character");
+            return usercontroller.registration(model);                     //Return to registration page with the customer message displayed to the user.
+        }
+        else
+        userService.registerUser(user);                                    //In case the password adheres to the password policy, register the user.
+        return "users/login";                                              //Redirect the user to Login Page post successful registration.
     }
 
     //This controller method is called when the request pattern is of type 'users/login'
     @RequestMapping("users/login")
-    public String login() {
+    public String login(){
         return "users/login";
     }
 
