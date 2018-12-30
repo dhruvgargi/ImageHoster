@@ -6,6 +6,7 @@ package ImageHoster.repository;
  *@ 1.0.0.1         22-Dec-2018                  Dhruv Sharma              Fix for Image Upload Issue.
  *@ 1.0.0.2         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit/delete the image.
 */
+import ImageHoster.model.Comments;
 import ImageHoster.model.Image;
 import org.springframework.stereotype.Repository;
 
@@ -61,16 +62,35 @@ public class ImageRepository {
         TypedQuery<Image> typedQuery = null; //Added by Dhruv Sharma. Fix for image upload issue.
         try {
             //typedQuery = (TypedQuery<Image>) em.createQuery("SELECT i from Image i where i.title =:title , Image.class)setParameter("title",title);;//Comments added by Dhruv Sharma. Fix for image upload issue.
-            typedQuery = (TypedQuery<Image>) em.createQuery("SELECT i from Image i where i.title =:title and i.id = :id", Image.class); //Added by Dhruv Sharma. Fix for image upload issue.
+            typedQuery = (TypedQuery<Image>) em.createQuery("SELECT i from Image i where i.title =:title and i.id =:id", Image.class); //Added by Dhruv Sharma. Fix for image upload issue.
             //Start: Added by Dhruv Sharma. Fix for image upload issue.
             typedQuery.setParameter("title",title);
             typedQuery.setParameter("id",id);
             //End: Added by Dhruv Sharma. Fix for image upload issue.
             return typedQuery.getSingleResult();
-
         } catch (NoResultException nre) {
-            return null;
+           return null;
         }
+    }
+
+    //The method creates an instance of EntityManager
+    //Executes JPQL query to fetch the image from the database with corresponding id
+    //Returns the image fetched from the database
+    public Image getImage(Integer imageId) {
+        EntityManager em = emf.createEntityManager();
+        TypedQuery<Image> typedQuery = null;
+        Image image = null;
+        try {
+             typedQuery = em.createQuery("SELECT i from Image i where i.id =:imageId", Image.class).setParameter("imageId", imageId);
+             image = typedQuery.getSingleResult();
+
+        }catch(Exception ex){
+         System.out.println("Exception: in getImage() "+ex.toString());
+        }finally{
+            typedQuery = null;
+            em.close();
+        }
+        return image;
     }
 
     //The method receives the Image object to be updated in the database
@@ -112,8 +132,8 @@ public class ImageRepository {
             transaction.rollback();
         }
     }
-	
-	// Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
+
+    // Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
     public boolean validateUser(Integer loggedUserId, Integer imageId){
         EntityManager em = emf.createEntityManager();
         TypedQuery<Image> typedQuery = null;
@@ -121,12 +141,14 @@ public class ImageRepository {
         Integer imageUserId = null;
         boolean bool = false;
         try {
+            //Retrieve the image based upon the image id.
             typedQuery = em.createQuery("SELECT i from Image i where i.id = :imageId", Image.class).setParameter("imageId", imageId);
             image = typedQuery.getSingleResult();
             imageUserId = (Integer) image.getUser().getId();
+            //Compare the user id for the image and the logged in user and in case of a match, true is returned to the controller.
             if(loggedUserId == imageUserId){ bool = true;}
         }catch(Exception ex){
-         System.out.println("Exception: "+ex);
+         System.out.println("Exception: "+ex);  //Echo the exception to the console in case of an undesirable experience.
         }finally{
             typedQuery = null;
             em.close();

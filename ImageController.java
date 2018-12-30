@@ -1,15 +1,17 @@
 package ImageHoster.controller;
 /*
----------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
  Version         Modification Date                Developer                Modifications
-----------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------------------------
  *@ 1.0.0.1         22-Dec-2018                  Dhruv Sharma              Fix for image upload issue.
  *@ 1.0.0.2         28-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can delete the image.
  *@ 1.0.0.3         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit the image.
+ *@ 1.0.0.4         30-Dec-2018                  Dhruv Sharma              Functionality Upgrade: Users can add comments for any image.
 */
 import ImageHoster.model.Image;
 import ImageHoster.model.Tag;
 import ImageHoster.model.User;
+import ImageHoster.service.CommentService;
 import ImageHoster.service.ImageService;
 import ImageHoster.service.TagService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
@@ -32,6 +33,9 @@ public class ImageController {
 
     @Autowired
     private TagService tagService;
+
+    @Autowired
+    private CommentService commentService;                            //Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -60,6 +64,7 @@ public class ImageController {
         Image image = imageService.getImageByTitle(title,id);    //Added by Dhruv Sharma. Fix for image upload issue.
         model.addAttribute("image", image);
         model.addAttribute("tags", image.getTags());
+        model.addAttribute("comments",commentService.retrieveComments(image));//Added by Dhruv Sharma.Functionality Upgrade: Users can add comments for any image.
         return "images/image";
     }
 
@@ -109,7 +114,7 @@ public class ImageController {
     // Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
     @RequestMapping(value = "/editImage")
     public String editImage(@RequestParam("imageId") Integer imageId, Model model,HttpSession session) {
-    // End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
+        // End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
         Image image = imageService.getImage(imageId);
 
         //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
@@ -118,6 +123,8 @@ public class ImageController {
         boolean bool = imageService.validateUser(user.getId(),imageId);
         if (!bool){
             errorPage = imageId+"/"+image.getTitle();
+            model.addAttribute("editError","Only the owner of the image can edit the image");
+            //Re-direct to the same image in case user is not authorized to edit the image.
             return "redirect:/images/"+errorPage+"?"+"editError";
         }
         else {
@@ -127,7 +134,9 @@ public class ImageController {
         }
         //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
 
+        //Re-direct to the same image in case user is authorized to edit the image.
         return "images/edit";
+
     }
 
     //This controller method is called when the request pattern is of type 'images/edit' and also the incoming request is of PUT type
@@ -150,18 +159,18 @@ public class ImageController {
 
         User user = (User) session.getAttribute("loggeduser");
 
-            if (updatedImageData.isEmpty())
-                updatedImage.setImageFile(image.getImageFile());
-            else {
-                updatedImage.setImageFile(updatedImageData);
-            }
+        if (updatedImageData.isEmpty())
+            updatedImage.setImageFile(image.getImageFile());
+        else {
+            updatedImage.setImageFile(updatedImageData);
+        }
 
-            updatedImage.setId(imageId);
-            updatedImage.setUser(user);
-            updatedImage.setTags(imageTags);
-            updatedImage.setDate(new Date());
+        updatedImage.setId(imageId);
+        updatedImage.setUser(user);
+        updatedImage.setTags(imageTags);
+        updatedImage.setDate(new Date());
 
-            imageService.updateImage(updatedImage);
+        imageService.updateImage(updatedImage);
 
         //return "redirect:/images/" + updatedImage.getTitle();           //Comments added by Dhruv Sharma. Fix for image upload issue.
         return "redirect:/images/"+imageId+"/"+updatedImage.getTitle();   //Added by Dhruv Sharma. Fix for image upload issue.
@@ -179,8 +188,8 @@ public class ImageController {
 
     //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
     @RequestMapping(value = "/deleteImage", method = RequestMethod.DELETE)
-    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session) {
-    //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
+    public String deleteImageSubmit(@RequestParam(name = "imageId") Integer imageId, HttpSession session,Model model) {
+        //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
 
         //imageService.deleteImage(imageId);      //Comments added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
 
@@ -192,12 +201,14 @@ public class ImageController {
         boolean bool = imageService.validateUser(user.getId(),imageId);
         if (bool){
             imageService.deleteImage(imageId);
+            //Re-direct to the success page in case user is authorized to delete the image.
             result = "redirect:/images";
         }
         else{
             errorPage = imageId+"/"+image.getTitle();
+            model.addAttribute("deleteError","Only the owner of the image can delete the image");
+            //Re-direct to the same image in case user is not authorized to delete the image.
             result = "redirect:images/"+errorPage+"?"+"deleteError";
-
         }
         //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can delete the image.
 
@@ -248,4 +259,6 @@ public class ImageController {
         }
         return tagString.toString();
     }
+
+
 }
