@@ -1,0 +1,38 @@
+<!Doctype html>
+<!--
+---------------------------------------------------------------------------------------------------------------------
+Version         Modification Date                Developer                Modifications
+---------------------------------------------------------------------------------------------------------------------
+*@ 1.0.0.1         22-Dec-2018                  Dhruv Sharma              Fix for image upload issue.
+-->
+<html xmlns:th="http://thymeleaf.org">
+
+<head th:replace="layout :: site-head">
+</head>
+
+<!-- Using the logged-in fragment -->
+<header th:replace="layout :: logged-in"></header>
+<!-- Display all the images in user home page after successful log in-->
+<body>
+<h1>Welcome User. These are the images</h1>
+<main id="images">
+    <post th:each="i : ${images}">
+        <p>
+        <div>
+            <img th:src="'data:image/jpeg;base64,'+${i.imageFile}"/>
+        </div>
+
+        <!--Change <a th:href="'/images/' + ${i.title}"> to <a th:href="'/images/' +${i.id} +'/' +${i.title}">-->
+        <!-- <a th:href="'/images/' + ${i.title}"> --> <!-- Comments added by Dhruv Sharma. Fix for image upload issue. -->
+        <a th:href="'/images/'+${i.id}+'/'+ ${i.title}"> <!-- Added by Dhruv Sharma. Fix for image upload issue. -->
+            <h3 th:text="${i.title}">Title of image</h3>
+        </a>
+        <i>Posted On: </i> <span th:text="${i.date}"></span>
+        <br>
+        <br>
+        <hr>
+        </p>
+    </post>
+</main>
+</body>
+</html>
