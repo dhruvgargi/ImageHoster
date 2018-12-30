@@ -9,10 +9,6 @@ import ImageHoster.model.Image;
 import ImageHoster.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -55,4 +51,6 @@ public class ImageService {
         return imageRepository.validateUser(loggedUserId,imageId);
     }
     //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
+
+
 }
