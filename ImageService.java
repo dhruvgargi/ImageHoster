@@ -1,10 +1,5 @@
 package ImageHoster.service;
-/*
---------------------------------------------------------------------------------------------------------------------------------
- Version         Modification Date                Developer                Modifications
---------------------------------------------------------------------------------------------------------------------------------
- *@ 1.0.0.1         29-Dec-2018                  Dhruv Sharma              Bug Fix: Owner of the image can edit/delete the image.
-*/
+
 import ImageHoster.model.Image;
 import ImageHoster.repository.ImageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,12 +40,5 @@ public class ImageService {
     //The method calls the deleteImage() method in the Repository and passes the Image id of the image to be deleted in the database
     public void deleteImage(Integer imageId) { imageRepository.deleteImage(imageId);
     }
-
-    //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
-    public boolean validateUser(Integer loggedUserId, Integer imageId){
-        return imageRepository.validateUser(loggedUserId,imageId);
-    }
-    //End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
-
 
 }

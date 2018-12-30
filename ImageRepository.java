@@ -133,28 +133,4 @@ public class ImageRepository {
         }
     }
 
-    // Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
-    public boolean validateUser(Integer loggedUserId, Integer imageId){
-        EntityManager em = emf.createEntityManager();
-        TypedQuery<Image> typedQuery = null;
-        Image image = null;
-        Integer imageUserId = null;
-        boolean bool = false;
-        try {
-            //Retrieve the image based upon the image id.
-            typedQuery = em.createQuery("SELECT i from Image i where i.id = :imageId", Image.class).setParameter("imageId", imageId);
-            image = typedQuery.getSingleResult();
-            imageUserId = (Integer) image.getUser().getId();
-            //Compare the user id for the image and the logged in user and in case of a match, true is returned to the controller.
-            if(loggedUserId == imageUserId){ bool = true;}
-        }catch(Exception ex){
-         System.out.println("Exception: "+ex);  //Echo the exception to the console in case of an undesirable experience.
-        }finally{
-            typedQuery = null;
-            em.close();
-        }
-        return bool;
-    }
-    // End: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit/delete the image.
-
 }

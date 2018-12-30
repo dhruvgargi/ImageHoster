@@ -120,8 +120,9 @@ public class ImageController {
         //Start: Added by Dhruv Sharma. Bug Fix: Owner of the image can edit the image.
         String errorPage = "", result = "";
         User user = (User) session.getAttribute("loggeduser");
-        boolean bool = imageService.validateUser(user.getId(),imageId);
-        if (!bool){
+        Integer imageUserID = imageService.getImage(imageId).getUser().getId();      //User ID corresponding to the specified image.
+        Integer loggedUserID = user.getId();                                         //User ID for the currently logged-in user.
+        if (imageUserID != loggedUserID){
             errorPage = imageId+"/"+image.getTitle();
             model.addAttribute("editError","Only the owner of the image can edit the image");
             //Re-direct to the same image in case user is not authorized to edit the image.
@@ -197,9 +198,10 @@ public class ImageController {
         String result = "",errorPage = "";
         Image image = imageService.getImage(imageId);
         User user = (User) session.getAttribute("loggeduser");
+        Integer imageUserID = imageService.getImage(imageId).getUser().getId();      //User ID corresponding to the specified image.
+        Integer loggedUserID = user.getId();                                         //User ID for the currently logged-in user.
 
-        boolean bool = imageService.validateUser(user.getId(),imageId);
-        if (bool){
+        if (imageUserID == loggedUserID){
             imageService.deleteImage(imageId);
             //Re-direct to the success page in case user is authorized to delete the image.
             result = "redirect:/images";
