@@ -1,4 +1,12 @@
 package ImageHoster.model;
+/*
+---------------------------------------------------------------------------------------------------------------------------------------
+ Version         Modification Date                Developer                Modifications
+---------------------------------------------------------------------------------------------------------------------------------------
+ *@ 1.0.0.1         30-Dec-2018                  Dhruv Sharma              Functionality Upgrade: Users can add comments for any image.
+*/
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -48,8 +56,12 @@ public class Image {
     //The attribute contains a list of all the tags of an image
     //Note that no column will be generated for this attribute in the database instead a new table will be created
     //Since the mapping is Many to Many, a new table will be generated containing the two columns both referencing to the primary key of both the tables ('images', 'tags')
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)                   //Added by Dhruv Sharma. Fix for exception encountered while performing LAZY Loading by the system.
     private List<Tag> tags = new ArrayList<>();
+
+    @OneToMany(fetch = FetchType.EAGER)
+    @Fetch(value = FetchMode.SUBSELECT)                    //Added by Dhruv Sharma. Fix for exception encountered : "org.hibernate.loader.MultipleBagFetchException: cannot simultaneously fetch multiple bags:"
+    private List<Comments> comments = new ArrayList<>();   //Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
 
     public Image() {
     }
@@ -126,4 +138,13 @@ public class Image {
     public void setTags(List<Tag> tags) {
         this.tags = tags;
     }
+
+    //Start: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
+    public List<Comments> getComments() {
+        return comments;
+    }
+    public void setComments(List<Comments> comments) {
+        this.comments = comments;
+    }
+    //End: Added by Dhruv Sharma. Functionality Upgrade: Users can add comments for any image.
 }
